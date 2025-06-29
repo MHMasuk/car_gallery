@@ -1,0 +1,1136 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if view.kwargs.car_type == 'new' %}
+        New Cars - CarDealz
+    {% elif view.kwargs.car_type == 'reconditioned' %}
+        Reconditioned Cars - CarDealz
+    {% else %}
+        All Cars - CarDealz
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --primary-dark: #1d4ed8;
+        --secondary-color: #f59e0b;
+        --success-color: #10b981;
+        --dark-color: #1f2937;
+        --light-bg: #f8fafc;
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 3rem 0 2rem;
+        margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff" fill-opacity="0.05" points="0,1000 1000,0 1000,1000"/></svg>');
+        background-size: cover;
+    }
+
+    .page-header .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-top: -2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Filter Sidebar */
+    .filter-sidebar {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        padding: 0;
+        overflow: hidden;
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filter-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.5rem;
+        margin: 0;
+    }
+
+    .filter-header h5 {
+        margin: 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-body {
+        padding: 1.5rem;
+    }
+
+    .filter-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .form-check {
+        margin-bottom: 0.5rem;
+        padding-left: 0;
+    }
+
+    .form-check-input {
+        margin-right: 0.75rem;
+        margin-top: 0.125rem;
+    }
+
+    .form-check-label {
+        font-size: 0.9rem;
+        color: #6b7280;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-select,
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus,
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-filter {
+        background: var(--gradient-primary);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    .btn-clear {
+        background: transparent;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #6b7280;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .btn-clear:hover {
+        border-color: #f87171;
+        color: #dc2626;
+        background: #fef2f2;
+    }
+
+    /* Car Listing Section */
+    .car-listing {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+        min-height: 600px;
+    }
+
+    .listing-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .listing-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin: 0;
+    }
+
+    .results-count {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .sort-dropdown {
+        position: relative;
+    }
+
+    .btn-sort {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        color: var(--dark-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-sort:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .dropdown-menu {
+        border: none;
+        border-radius: 12px;
+        box-shadow: var(--shadow-xl);
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .dropdown-item {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dropdown-item:hover {
+        background: var(--light-bg);
+        color: var(--primary-color);
+    }
+
+    /* Car Cards */
+    .car-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .car-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #f3f4f6;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .car-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--shadow-xl);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .car-image-container {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .car-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .car-card:hover .car-image {
+        transform: scale(1.1);
+    }
+
+    .car-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .badge-new {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .badge-reconditioned {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .badge-used {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+
+    .car-content {
+        padding: 1.5rem;
+    }
+
+    .car-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+    .car-specs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .car-spec-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .car-spec-item i {
+        color: var(--primary-color);
+        width: 14px;
+    }
+
+    .car-description {
+        color: #6b7280;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .car-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .car-price {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-color);
+    }
+
+    .car-posted {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        background: #f9fafb;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #d1d5db;
+    }
+
+    .empty-state h3 {
+        color: var(--dark-color);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .pagination {
+        margin: 0;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .page-item .page-link {
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        color: #6b7280;
+        background: white;
+        transition: all 0.3s ease;
+        margin: 0;
+    }
+
+    .page-item .page-link:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: rgba(37, 99, 235, 0.05);
+    }
+
+    .page-item.active .page-link {
+        background: var(--gradient-primary);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .page-item.disabled .page-link {
+        color: #d1d5db;
+        background: #f9fafb;
+        border-color: #f3f4f6;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .filter-sidebar {
+            position: static;
+            margin-bottom: 2rem;
+        }
+
+        .listing-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .car-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .car-specs {
+            gap: 0.5rem;
+        }
+
+        .car-footer {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .main-content {
+            margin-top: -1rem;
+        }
+
+        .page-header {
+            padding: 2rem 0 1.5rem;
+        }
+    }
+
+    /* Loading States */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .loading-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f4f6;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* View Toggle */
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+        background: #f3f4f6;
+        padding: 0.25rem;
+        border-radius: 10px;
+    }
+
+    .view-toggle button {
+        background: transparent;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 8px;
+        color: #6b7280;
+        transition: all 0.3s ease;
+    }
+
+    .view-toggle button.active {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title">
+                    {% if view.kwargs.car_type == 'new' %}
+                        <i class="fas fa-star me-2"></i>New Cars
+                    {% elif view.kwargs.car_type == 'reconditioned' %}
+                        <i class="fas fa-recycle me-2"></i>Reconditioned Cars
+                    {% else %}
+                        <i class="fas fa-car me-2"></i>All Cars
+                    {% endif %}
+                </h1>
+                <p class="page-subtitle">
+                    {% if view.kwargs.car_type == 'new' %}
+                        Discover our latest collection of brand new vehicles
+                    {% elif view.kwargs.car_type == 'reconditioned' %}
+                        Quality reconditioned cars with guaranteed performance
+                    {% else %}
+                        Browse our complete inventory of premium vehicles
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex align-items-center justify-content-md-end gap-3">
+                    <span class="text-white-50">{{ cars|length }} cars found</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container main-content">
+    <div class="row g-4">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="filter-sidebar">
+                <div class="filter-header">
+                    <h5><i class="fas fa-filter me-2"></i>Filter Cars</h5>
+                </div>
+                <div class="filter-body">
+                    <form method="get" action="{% url 'car-list' %}" id="filterForm">
+                        <!-- Car Type Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">Car Type</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="car_type" value="" id="type_all"
+                                       {% if not filter_form.car_type.value %}checked{% endif %}>
+                                <label class="form-check-label" for="type_all">All Types</label>
+                            </div>
+                            {% for value, display in car_types %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="car_type" value="{{ value }}"
+                                           id="type_{{ value }}"
+                                           {% if filter_form.car_type.value == value %}checked{% endif %}>
+                                    <label class="form-check-label" for="type_{{ value }}">
+                                        {% if value == 'new' %}
+                                            <i class="fas fa-star me-1"></i>
+                                        {% elif value == 'reconditioned' %}
+                                            <i class="fas fa-recycle me-1"></i>
+                                        {% else %}
+                                            <i class="fas fa-car me-1"></i>
+                                        {% endif %}
+                                        {{ display }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Make Filter -->
+                        <div class="filter-group">
+                            <label for="make" class="filter-label">Make</label>
+                            <select class="form-select" id="make" name="make">
+                                <option value="">All Makes</option>
+                                {% for make in makes %}
+                                    <option value="{{ make.id }}"
+                                            {% if filter_form.make.value == make.id|stringformat:"i" %}selected{% endif %}>
+                                        {{ make.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">Price Range</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="min_price" placeholder="Min"
+                                               value="{{ filter_form.min_price.value|default:'' }}">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" name="max_price" placeholder="Max"
+                                               value="{{ filter_form.max_price.value|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">Year</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="min_year" placeholder="From"
+                                           value="{{ filter_form.min_year.value|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control" name="max_year" placeholder="To"
+                                           value="{{ filter_form.max_year.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transmission -->
+                        <div class="filter-group">
+                            <label for="transmission" class="filter-label">Transmission</label>
+                            <select class="form-select" id="transmission" name="transmission">
+                                <option value="">Any Transmission</option>
+                                {% for value, display in car.TRANSMISSION_CHOICES %}
+                                    <option value="{{ value }}"
+                                            {% if filter_form.transmission.value == value %}selected{% endif %}>
+                                        {{ display }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Fuel Type -->
+                        <div class="filter-group">
+                            <label for="fuel_type" class="filter-label">Fuel Type</label>
+                            <select class="form-select" id="fuel_type" name="fuel_type">
+                                <option value="">Any Fuel Type</option>
+                                {% for value, display in car.FUEL_TYPE_CHOICES %}
+                                    <option value="{{ value }}"
+                                            {% if filter_form.fuel_type.value == value %}selected{% endif %}>
+                                        {{ display }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Filter Buttons -->
+                        <button type="submit" class="btn-filter">
+                            <i class="fas fa-search me-2"></i>Apply Filters
+                        </button>
+                        {% if request.GET %}
+                            <a href="{% url 'car-list' %}" class="btn-clear">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Car Listing -->
+        <div class="col-lg-9">
+            <div class="car-listing">
+                <!-- Listing Header -->
+                <div class="listing-header">
+                    <div>
+                        <h2 class="listing-title">
+                            {% if view.kwargs.car_type == 'new' %}
+                                New Cars
+                            {% elif view.kwargs.car_type == 'reconditioned' %}
+                                Reconditioned Cars
+                            {% else %}
+                                All Cars
+                            {% endif %}
+                        </h2>
+                        <div class="results-count">
+                            Showing {{ cars|length }}
+                            {% if is_paginated %}
+                                of {{ paginator.count }}
+                            {% endif %}
+                            results
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Sort Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn-sort dropdown-toggle" type="button" id="sortDropdown"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-sort"></i>
+                                Sort By
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'sort' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}sort=price-low">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Price: Low to High
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'sort' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}sort=price-high">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Price: High to Low
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'sort' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}sort=newest">
+                                        <i class="fas fa-clock"></i>
+                                        Newest First
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="?{% if request.GET %}{% for key, value in request.GET.items %}{% if key != 'sort' %}{{ key }}={{ value }}&{% endif %}{% endfor %}{% endif %}sort=oldest">
+                                        <i class="fas fa-history"></i>
+                                        Oldest First
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Car Grid -->
+                <div class="car-grid">
+                    {% for car in cars %}
+                        <a href="{{ car.get_absolute_url }}" class="car-card">
+                            <div class="car-image-container">
+                                {% if car.images.exists %}
+                                    <img src="{{ car.images.first.image.url }}" alt="{{ car }}" class="car-image">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x220/667eea/ffffff?text=No+Image" alt="{{ car }}" class="car-image">
+                                {% endif %}
+                                <div class="car-badge badge-{{ car.car_type }}">
+                                    {{ car.get_car_type_display }}
+                                </div>
+                            </div>
+                            <div class="car-content">
+                                <h3 class="car-title">{{ car.year }} {{ car.make.name }} {{ car.model.name }}</h3>
+
+                                <div class="car-specs">
+                                    <div class="car-spec-item">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        {{ car.mileage|floatformat:0 }} km
+                                    </div>
+                                    <div class="car-spec-item">
+                                        <i class="fas fa-cog"></i>
+                                        {{ car.get_transmission_display }}
+                                    </div>
+                                    <div class="car-spec-item">
+                                        <i class="fas fa-gas-pump"></i>
+                                        {{ car.get_fuel_type_display }}
+                                    </div>
+                                    {% if car.country_of_origin %}
+                                        <div class="car-spec-item">
+                                            <i class="fas fa-globe"></i>
+                                            {{ car.country_of_origin }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <p class="car-description">{{ car.description|truncatewords:20 }}</p>
+
+                                <div class="car-footer">
+                                    <div class="car-price">${{ car.price|floatformat:0 }}</div>
+                                    <div class="car-posted">{{ car.posted_on|timesince }} ago</div>
+                                </div>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h3>No Cars Found</h3>
+                            <p>We couldn't find any cars matching your criteria. Try adjusting your filters or search terms.</p>
+                            <a href="{% url 'car-list' %}" class="btn-filter" style="width: auto; display: inline-block;">
+                                <i class="fas fa-refresh me-2"></i>
+                                View All Cars
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                    <div class="pagination-container">
+                        <nav aria-label="Car listings pagination">
+                            <ul class="pagination">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const sortLinks = document.querySelectorAll('.dropdown-item');
+
+        // Show loading overlay on form submission
+        if (filterForm) {
+            filterForm.addEventListener('submit', function() {
+                showLoading();
+            });
+        }
+
+        // Show loading overlay on sort links
+        sortLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                showLoading();
+            });
+        });
+
+        // Show loading overlay on pagination links
+        document.querySelectorAll('.pagination .page-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (!this.parentElement.classList.contains('disabled') &&
+                    !this.parentElement.classList.contains('active')) {
+                    showLoading();
+                }
+            });
+        });
+
+        function showLoading() {
+            loadingOverlay.classList.add('show');
+        }
+
+        // Auto-submit form on filter changes (optional)
+        const autoSubmitElements = document.querySelectorAll('#filterForm select, #filterForm input[type="radio"]');
+        autoSubmitElements.forEach(element => {
+            element.addEventListener('change', function() {
+                // Optional: Auto-submit form on filter changes
+                // Uncomment the line below if you want instant filtering
+                // filterForm.submit();
+            });
+        });
+
+        // Price range validation
+        const minPriceInput = document.querySelector('input[name="min_price"]');
+        const maxPriceInput = document.querySelector('input[name="max_price"]');
+
+        if (minPriceInput && maxPriceInput) {
+            minPriceInput.addEventListener('input', function() {
+                const minValue = parseFloat(this.value);
+                const maxValue = parseFloat(maxPriceInput.value);
+
+                if (minValue && maxValue && minValue > maxValue) {
+                    maxPriceInput.value = minValue;
+                }
+            });
+
+            maxPriceInput.addEventListener('input', function() {
+                const minValue = parseFloat(minPriceInput.value);
+                const maxValue = parseFloat(this.value);
+
+                if (minValue && maxValue && maxValue < minValue) {
+                    minPriceInput.value = maxValue;
+                }
+            });
+        }
+
+        // Year range validation
+        const minYearInput = document.querySelector('input[name="min_year"]');
+        const maxYearInput = document.querySelector('input[name="max_year"]');
+        const currentYear = new Date().getFullYear();
+
+        if (minYearInput && maxYearInput) {
+            minYearInput.addEventListener('input', function() {
+                const minValue = parseInt(this.value);
+                const maxValue = parseInt(maxYearInput.value);
+
+                if (minValue && minValue > currentYear) {
+                    this.value = currentYear;
+                }
+
+                if (minValue && maxValue && minValue > maxValue) {
+                    maxYearInput.value = minValue;
+                }
+            });
+
+            maxYearInput.addEventListener('input', function() {
+                const minValue = parseInt(minYearInput.value);
+                const maxValue = parseInt(this.value);
+
+                if (maxValue && maxValue > currentYear) {
+                    this.value = currentYear;
+                }
+
+                if (minValue && maxValue && maxValue < minValue) {
+                    minYearInput.value = maxValue;
+                }
+            });
+        }
+
+        // Smooth scroll to top when filtering
+        if (window.location.search.includes('page=') || window.location.search.includes('sort=')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Add active state to current sort option
+        const currentSort = new URLSearchParams(window.location.search).get('sort');
+        if (currentSort) {
+            const sortButton = document.getElementById('sortDropdown');
+            const sortLabels = {
+                'price-low': 'Price: Low to High',
+                'price-high': 'Price: High to Low',
+                'newest': 'Newest First',
+                'oldest': 'Oldest First'
+            };
+
+            if (sortLabels[currentSort] && sortButton) {
+                sortButton.innerHTML = `<i class="fas fa-sort"></i> ${sortLabels[currentSort]}`;
+            }
+        }
+
+        // Add fade-in animation to car cards
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '0';
+                    entry.target.style.transform = 'translateY(20px)';
+                    entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, 100);
+
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe car cards for animation
+        document.querySelectorAll('.car-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Mobile filter toggle (if needed)
+        const filterToggle = document.getElementById('filterToggle');
+        const filterSidebar = document.querySelector('.filter-sidebar');
+
+        if (filterToggle && filterSidebar) {
+            filterToggle.addEventListener('click', function() {
+                filterSidebar.classList.toggle('show');
+            });
+        }
+
+        // Clear individual filters
+        document.querySelectorAll('.filter-clear').forEach(button => {
+            button.addEventListener('click', function() {
+                const filterType = this.dataset.filter;
+
+                if (filterType === 'car_type') {
+                    document.getElementById('type_all').checked = true;
+                } else if (filterType === 'make') {
+                    document.getElementById('make').value = '';
+                } else if (filterType === 'price') {
+                    document.querySelector('input[name="min_price"]').value = '';
+                    document.querySelector('input[name="max_price"]').value = '';
+                } else if (filterType === 'year') {
+                    document.querySelector('input[name="min_year"]').value = '';
+                    document.querySelector('input[name="max_year"]').value = '';
+                } else if (filterType === 'transmission') {
+                    document.getElementById('transmission').value = '';
+                } else if (filterType === 'fuel_type') {
+                    document.getElementById('fuel_type').value = '';
+                }
+            });
+        });
+    });
+</script>
+
+    <!-- Add this to the head section of your car_list.html template -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // For car type selection
+    const carTypeInputs = document.querySelectorAll('input[name="car_type"]');
+    carTypeInputs.forEach(input => {
+      input.addEventListener('click', function() {
+        // Submit the form when a car type is clicked
+        document.getElementById('car-filter-form').submit();
+      });
+    });
+
+    // For make selection if it's a dropdown
+    const makeSelect = document.querySelector('select[name="make"]');
+    if (makeSelect) {
+      makeSelect.addEventListener('change', function() {
+        document.getElementById('car-filter-form').submit();
+      });
+    }
+
+    // For model selection if it's a dropdown
+    const modelSelect = document.querySelector('select[name="model"]');
+    if (modelSelect) {
+      modelSelect.addEventListener('change', function() {
+        document.getElementById('car-filter-form').submit();
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,2513 @@
+{#{% extends 'base.html' %}#}
+{#{% load static %}#}
+{##}
+{#{% block title %}{{ car.year }} {{ car.make }} {{ car.model }} - CarDealz{% endblock %}#}
+{##}
+{#{% block extra_css %}#}
+{#<style>#}
+{#  .car-gallery {#}
+{#    position: relative;#}
+{#    overflow: hidden;#}
+{#    border-radius: 8px;#}
+{#    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);#}
+{#  }#}
+{#  #}
+{#  .car-gallery img {#}
+{#    width: 100%;#}
+{#    height: 450px;#}
+{#    object-fit: cover;#}
+{#  }#}
+{#  #}
+{#  .thumbnail-gallery {#}
+{#    margin-top: 10px;#}
+{#    display: flex;#}
+{#    gap: 10px;#}
+{#    overflow-x: auto;#}
+{#    padding-bottom: 10px;#}
+{#  }#}
+{#  #}
+{#  .thumbnail {#}
+{#    width: 100px;#}
+{#    height: 70px;#}
+{#    object-fit: cover;#}
+{#    border-radius: 4px;#}
+{#    cursor: pointer;#}
+{#    opacity: 0.7;#}
+{#    transition: all 0.3s;#}
+{#  }#}
+{#  #}
+{#  .thumbnail.active, .thumbnail:hover {#}
+{#    opacity: 1;#}
+{#    border: 2px solid var(--bs-primary);#}
+{#  }#}
+{#  #}
+{#  .car-price {#}
+{#    font-size: 2.5rem;#}
+{#    font-weight: 700;#}
+{#    color: var(--bs-primary);#}
+{#  }#}
+{#  #}
+{#  .car-badge {#}
+{#    font-size: 0.9rem;#}
+{#    padding: 6px 12px;#}
+{#  }#}
+{#  #}
+{#  .feature-list p {#}
+{#    position: relative;#}
+{#    padding-left: 30px;#}
+{#    margin-bottom: 10px;#}
+{#  }#}
+{##}
+{#  .feature-list p:before {#}
+{#    content: "\f058";#}
+{#    font-family: "Font Awesome 5 Free";#}
+{#    font-weight: 900;#}
+{#    color: var(--bs-success);#}
+{#    position: absolute;#}
+{#    left: 0;#}
+{#    top: 0;#}
+{#  }#}
+{##}
+{#  .spec-item {#}
+{#    display: flex;#}
+{#    align-items: center;#}
+{#    margin-bottom: 15px;#}
+{#  }#}
+{##}
+{#  .spec-item p {#}
+{#    margin-bottom: 0;#}
+{#  }#}
+{##}
+{#  .seller-card {#}
+{#    background-color: #f8f9fa;#}
+{#    border-radius: 8px;#}
+{#    padding: 20px;#}
+{#  }#}
+{##}
+{#  .seller-info {#}
+{#    display: flex;#}
+{#    align-items: center;#}
+{#    margin-bottom: 15px;#}
+{#  }#}
+{##}
+{#  .seller-avatar {#}
+{#    width: 60px;#}
+{#    height: 60px;#}
+{#    border-radius: 50%;#}
+{#    object-fit: cover;#}
+{#    margin-right: 15px;#}
+{#  }#}
+{##}
+{#  .inquiry-form label {#}
+{#    font-weight: 500;#}
+{#  }#}
+{##}
+{#  .similar-car-item {#}
+{#    transition: transform 0.3s;#}
+{#  }#}
+{##}
+{#  .similar-car-item:hover {#}
+{#    transform: translateY(-5px);#}
+{#  }#}
+{##}
+{#  @media (max-width: 768px) {#}
+{#    .car-gallery img {#}
+{#      height: 300px;#}
+{#    }#}
+{#  }#}
+{#</style>#}
+{#{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#<div class="container-fluid py-5">#}
+{#  <!-- Breadcrumb -->#}
+{#  <nav aria-label="breadcrumb" class="mb-4">#}
+{#    <ol class="breadcrumb">#}
+{#      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>#}
+{#      <li class="breadcrumb-item"><a href="{% url 'car-list' %}">Cars</a></li>#}
+{#      <li class="breadcrumb-item active">{{ car.year }} {{ car.make }} {{ car.model }}</li>#}
+{#    </ol>#}
+{#  </nav>#}
+{##}
+{#  <div class="row">#}
+{#    <!-- Main Content Column -->#}
+{#    <div class="col-lg-8 mb-4">#}
+{##}
+{#      <!-- Car Status Banner (if sold) -->#}
+{#      {% if car.is_sold %}#}
+{#      <div class="alert alert-danger mb-4 d-flex align-items-center" role="alert">#}
+{#        <i class="fas fa-exclamation-circle fa-2x me-3"></i>#}
+{#        <div>#}
+{#          <h4 class="alert-heading mb-1">This car has been sold!</h4>#}
+{#          <p class="mb-0">This listing is kept for reference purposes only. Contact the seller for similar vehicles.</p>#}
+{#        </div>#}
+{#      </div>#}
+{#      {% endif %}#}
+{##}
+{#      <!-- Car Title Section -->#}
+{#      <div class="d-flex justify-content-between align-items-center mb-4">#}
+{#        <div>#}
+{#          <h1 class="display-6 fw-bold mb-0">{{ car.year }} {{ car.make }} {{ car.model }}</h1>#}
+{#          <p class="text-muted">Posted on {{ car.posted_on|date:"F j, Y" }}</p>#}
+{#        </div>#}
+{#        <div>#}
+{#          {% if car.car_type == 'new' %}#}
+{#            <span class="badge bg-primary car-badge">New</span>#}
+{#          {% elif car.car_type == 'reconditioned' %}#}
+{#            <span class="badge bg-success car-badge">Reconditioned</span>#}
+{#          {% else %}#}
+{#            <span class="badge bg-secondary car-badge">Used</span>#}
+{#          {% endif %}#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <!-- Car Image Gallery -->#}
+{#      <div class="car-gallery mb-4">#}
+{#        {% if car.images.exists %}#}
+{#          <div id="carCarousel" class="carousel slide" data-bs-ride="carousel">#}
+{#            <div class="carousel-inner">#}
+{#              {% for image in car.images.all %}#}
+{#                <div class="carousel-item {% if forloop.first %}active{% endif %}">#}
+{#                  <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ car }} - Image {{ forloop.counter }}">#}
+{#                </div>#}
+{#              {% endfor %}#}
+{#            </div>#}
+{#            <button class="carousel-control-prev" type="button" data-bs-target="#carCarousel" data-bs-slide="prev">#}
+{#              <span class="carousel-control-prev-icon" aria-hidden="true"></span>#}
+{#              <span class="visually-hidden">Previous</span>#}
+{#            </button>#}
+{#            <button class="carousel-control-next" type="button" data-bs-target="#carCarousel" data-bs-slide="next">#}
+{#              <span class="carousel-control-next-icon" aria-hidden="true"></span>#}
+{#              <span class="visually-hidden">Next</span>#}
+{#            </button>#}
+{#          </div>#}
+{##}
+{#          <!-- Thumbnails -->#}
+{#          <div class="thumbnail-gallery">#}
+{#            {% for image in car.images.all %}#}
+{#              <img src="{{ image.image.url }}" class="thumbnail {% if forloop.first %}active{% endif %}"#}
+{#                   data-bs-target="#carCarousel" data-bs-slide-to="{{ forloop.counter0 }}"#}
+{#                   alt="Thumbnail {{ forloop.counter }}">#}
+{#            {% endfor %}#}
+{#          </div>#}
+{#        {% else %}#}
+{#          <img src="{% static 'images/car-placeholder.jpg' %}" class="img-fluid" alt="Car Image Placeholder">#}
+{#        {% endif %}#}
+{#      </div>#}
+{##}
+{#      <!-- Key Specifications -->#}
+{#      <div class="card mb-4 border-0 shadow-sm">#}
+{#        <div class="card-body">#}
+{#          <div class="row">#}
+{#            <div class="col-6 col-md-3 mb-3 mb-md-0 text-center">#}
+{#              <div class="d-flex flex-column">#}
+{#                <i class="fas fa-calendar-alt text-primary mb-2 fa-2x"></i>#}
+{#                <span class="text-muted small">Year</span>#}
+{#                <span class="fw-bold">{{ car.year }}</span>#}
+{#              </div>#}
+{#            </div>#}
+{#            <div class="col-6 col-md-3 mb-3 mb-md-0 text-center">#}
+{#              <div class="d-flex flex-column">#}
+{#                <i class="fas fa-tachometer-alt text-primary mb-2 fa-2x"></i>#}
+{#                <span class="text-muted small">Mileage</span>#}
+{#                <span class="fw-bold">{{ car.mileage }} km</span>#}
+{#              </div>#}
+{#            </div>#}
+{#            <div class="col-6 col-md-3 text-center">#}
+{#              <div class="d-flex flex-column">#}
+{#                <i class="fas fa-gas-pump text-primary mb-2 fa-2x"></i>#}
+{#                <span class="text-muted small">Fuel</span>#}
+{#                <span class="fw-bold">{{ car.get_fuel_type_display }}</span>#}
+{#              </div>#}
+{#            </div>#}
+{#            <div class="col-6 col-md-3 text-center">#}
+{#              <div class="d-flex flex-column">#}
+{#                <i class="fas fa-cog text-primary mb-2 fa-2x"></i>#}
+{#                <span class="text-muted small">Transmission</span>#}
+{#                <span class="fw-bold">{{ car.get_transmission_display }}</span>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <!-- Main Info Tabs -->#}
+{#      <div class="card mb-4 border-0 shadow-sm">#}
+{#        <div class="card-header bg-white">#}
+{#          <ul class="nav nav-tabs card-header-tabs" id="carDetailTabs" role="tablist">#}
+{#            <li class="nav-item" role="presentation">#}
+{#              <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"#}
+{#                      type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>#}
+{#            </li>#}
+{#            <li class="nav-item" role="presentation">#}
+{#              <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features"#}
+{#                      type="button" role="tab" aria-controls="features" aria-selected="false">Features</button>#}
+{#            </li>#}
+{#            {% if car.car_type == 'reconditioned' %}#}
+{#            <li class="nav-item" role="presentation">#}
+{#              <button class="nav-link" id="reconinfo-tab" data-bs-toggle="tab" data-bs-target="#reconinfo"#}
+{#                      type="button" role="tab" aria-controls="reconinfo" aria-selected="false">Reconditioning</button>#}
+{#            </li>#}
+{#            {% endif %}#}
+{#            <li class="nav-item" role="presentation">#}
+{#              <button class="nav-link" id="seller-tab" data-bs-toggle="tab" data-bs-target="#seller"#}
+{#                      type="button" role="tab" aria-controls="seller" aria-selected="false">Seller</button>#}
+{#            </li>#}
+{#          </ul>#}
+{#        </div>#}
+{#        <div class="card-body">#}
+{#          <div class="tab-content" id="carDetailTabsContent">#}
+{#            <!-- Overview Tab -->#}
+{#            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">#}
+{#              <!-- Car Highlights Section -->#}
+{#              <div class="car-highlights mb-5">#}
+{#                <div class="row g-0">#}
+{#                  <div class="col-md-7 pe-md-4">#}
+{#                    <div class="highlights-card bg-light p-4 rounded-3 h-100">#}
+{#                      <h4 class="highlights-title position-relative pb-2 mb-4">#}
+{#                        <i class="fas fa-star text-warning me-2"></i>Key Highlights#}
+{#                        <span class="title-underline"></span>#}
+{#                      </h4>#}
+{#                      <div class="highlights-content">#}
+{#                        <div class="highlight-item d-flex align-items-center mb-3">#}
+{#                          <div class="highlight-icon me-3">#}
+{#                            <i class="fas fa-check-circle text-success"></i>#}
+{#                          </div>#}
+{#                          <div class="highlight-text">{{ car.year }} model with {{ car.mileage }} km on the odometer</div>#}
+{#                        </div>#}
+{#                        <div class="highlight-item d-flex align-items-center mb-3">#}
+{#                          <div class="highlight-icon me-3">#}
+{#                            <i class="fas fa-check-circle text-success"></i>#}
+{#                          </div>#}
+{#                          <div class="highlight-text">{{ car.get_transmission_display }} transmission with {{ car.get_fuel_type_display }} engine</div>#}
+{#                        </div>#}
+{#                        <div class="highlight-item d-flex align-items-center mb-3">#}
+{#                          <div class="highlight-icon me-3">#}
+{#                            <i class="fas fa-check-circle text-success"></i>#}
+{#                          </div>#}
+{#                          <div class="highlight-text">{{ car.color }} exterior with {{ car.seats }} comfortable seats</div>#}
+{#                        </div>#}
+{#                        <div class="highlight-item d-flex align-items-center">#}
+{#                          <div class="highlight-icon me-3">#}
+{#                            <i class="fas fa-check-circle text-success"></i>#}
+{#                          </div>#}
+{#                          <div class="highlight-text">{{ car.engine_capacity }}L engine capacity with excellent performance</div>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                  </div>#}
+{#                  <div class="col-md-5 mt-4 mt-md-0">#}
+{#                    <div class="quick-details-card bg-primary text-white p-4 rounded-3 h-100 d-flex flex-column">#}
+{#                      <h4 class="text-white mb-4 pb-2 border-bottom border-light">Quick Details</h4>#}
+{#                      <div class="quick-details-content flex-grow-1">#}
+{#                        <div class="quick-detail-item d-flex justify-content-between mb-3">#}
+{#                          <span class="text-white-50">Make:</span>#}
+{#                          <span class="fw-bold">{{ car.make }}</span>#}
+{#                        </div>#}
+{#                        <div class="quick-detail-item d-flex justify-content-between mb-3">#}
+{#                          <span class="text-white-50">Model:</span>#}
+{#                          <span class="fw-bold">{{ car.model }}</span>#}
+{#                        </div>#}
+{#                        <div class="quick-detail-item d-flex justify-content-between mb-3">#}
+{#                          <span class="text-white-50">Year:</span>#}
+{#                          <span class="fw-bold">{{ car.year }}</span>#}
+{#                        </div>#}
+{#                        <div class="quick-detail-item d-flex justify-content-between mb-3">#}
+{#                          <span class="text-white-50">Body Type:</span>#}
+{#                          <span class="fw-bold">{{ car.get_car_type_display }}</span>#}
+{#                        </div>#}
+{#                        <div class="quick-detail-item d-flex justify-content-between">#}
+{#                          <span class="text-white-50">Condition:</span>#}
+{#                          <span class="fw-bold badge bg-light text-dark px-3 py-2">{{ car.car_type|title }}</span>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#            #}
+{#              <!-- Description Section -->#}
+{#              <div class="description-section mb-5">#}
+{#                <div class="section-header d-flex align-items-center mb-4">#}
+{#                  <div class="section-icon me-3">#}
+{#                    <span class="icon-circle bg-primary text-white">#}
+{#                      <i class="fas fa-info-circle"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <h4 class="section-title mb-0">About This Vehicle</h4>#}
+{#                </div>#}
+{#                <div class="description-content bg-white p-4 rounded-3 border">#}
+{#                  <div class="description-text">#}
+{#                    {{ car.description|linebreaks }}#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#            #}
+{#              <!-- Technical Specifications -->#}
+{#              <div class="specifications-section">#}
+{#                <div class="section-header d-flex align-items-center mb-4">#}
+{#                  <div class="section-icon me-3">#}
+{#                    <span class="icon-circle bg-primary text-white">#}
+{#                      <i class="fas fa-cogs"></i>#}
+{#                    </span>#}
+{#                  </div>#}
+{#                  <h4 class="section-title mb-0">Technical Specifications</h4>#}
+{#                </div>#}
+{#                #}
+{#                <div class="specifications-grid">#}
+{#                  <div class="row row-cols-1 row-cols-md-3 g-4">#}
+{#                    <!-- Performance Specs -->#}
+{#                    <div class="col">#}
+{#                      <div class="spec-category-card h-100">#}
+{#                        <div class="spec-category-header bg-light p-3 rounded-top">#}
+{#                          <h5 class="mb-0">#}
+{#                            <i class="fas fa-tachometer-alt text-primary me-2"></i>Performance#}
+{#                          </h5>#}
+{#                        </div>#}
+{#                        <div class="spec-category-body p-3 border border-top-0 rounded-bottom">#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Engine</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.engine_capacity }}L</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Fuel Type</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.get_fuel_type_display }}</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern">#}
+{#                            <div class="spec-label text-muted">Transmission</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.get_transmission_display }}</div>#}
+{#                          </div>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                    #}
+{#                    <!-- Exterior Specs -->#}
+{#                    <div class="col">#}
+{#                      <div class="spec-category-card h-100">#}
+{#                        <div class="spec-category-header bg-light p-3 rounded-top">#}
+{#                          <h5 class="mb-0">#}
+{#                            <i class="fas fa-car text-primary me-2"></i>Exterior#}
+{#                          </h5>#}
+{#                        </div>#}
+{#                        <div class="spec-category-body p-3 border border-top-0 rounded-bottom">#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Color</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.color }}</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Body Type</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.get_car_type_display }}</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern">#}
+{#                            <div class="spec-label text-muted">Doors</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.doors }}</div>#}
+{#                          </div>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                    #}
+{#                    <!-- Interior Specs -->#}
+{#                    <div class="col">#}
+{#                      <div class="spec-category-card h-100">#}
+{#                        <div class="spec-category-header bg-light p-3 rounded-top">#}
+{#                          <h5 class="mb-0">#}
+{#                            <i class="fas fa-couch text-primary me-2"></i>Interior#}
+{#                          </h5>#}
+{#                        </div>#}
+{#                        <div class="spec-category-body p-3 border border-top-0 rounded-bottom">#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Seats</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.seats }}</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern mb-3">#}
+{#                            <div class="spec-label text-muted">Mileage</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.mileage }} km</div>#}
+{#                          </div>#}
+{#                          <div class="spec-item-modern">#}
+{#                            <div class="spec-label text-muted">Posted On</div>#}
+{#                            <div class="spec-value fw-bold">{{ car.posted_on|date:"F j, Y" }}</div>#}
+{#                          </div>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                  </div>#}
+{#                </div>#}
+{#              </div>#}
+{#              #}
+{#              <style>#}
+{#                .title-underline {#}
+{#                  position: absolute;#}
+{#                  bottom: 0;#}
+{#                  left: 0;#}
+{#                  width: 80px;#}
+{#                  height: 3px;#}
+{#                  background-color: var(--bs-warning);#}
+{#                }#}
+{#                #}
+{#                .highlights-title {#}
+{#                  font-size: 1.3rem;#}
+{#                }#}
+{#                #}
+{#                .highlight-icon i {#}
+{#                  font-size: 1.2rem;#}
+{#                }#}
+{#                #}
+{#                .highlight-text {#}
+{#                  font-size: 1rem;#}
+{#                  line-height: 1.5;#}
+{#                }#}
+{#                #}
+{#                .highlights-card, .quick-details-card {#}
+{#                  box-shadow: 0 3px 10px rgba(0,0,0,0.08);#}
+{#                }#}
+{#                #}
+{#                .icon-circle {#}
+{#                  display: flex;#}
+{#                  align-items: center;#}
+{#                  justify-content: center;#}
+{#                  width: 40px;#}
+{#                  height: 40px;#}
+{#                  border-radius: 50%;#}
+{#                  font-size: 1.2rem;#}
+{#                }#}
+{#                #}
+{#                .section-title {#}
+{#                  font-size: 1.5rem;#}
+{#                  font-weight: 600;#}
+{#                }#}
+{#                #}
+{#                .description-content {#}
+{#                  font-size: 1rem;#}
+{#                  line-height: 1.7;#}
+{#                  box-shadow: 0 2px 8px rgba(0,0,0,0.05);#}
+{#                }#}
+{#                #}
+{#                .spec-category-card {#}
+{#                  transition: transform 0.3s, box-shadow 0.3s;#}
+{#                  box-shadow: 0 3px 10px rgba(0,0,0,0.05);#}
+{#                }#}
+{#                #}
+{#                .spec-category-card:hover {#}
+{#                  transform: translateY(-5px);#}
+{#                  box-shadow: 0 8px 15px rgba(0,0,0,0.1);#}
+{#                }#}
+{#                #}
+{#                .spec-item-modern {#}
+{#                  border-bottom: 1px dashed #eee;#}
+{#                  padding-bottom: 0.75rem;#}
+{#                }#}
+{#                #}
+{#                .spec-item-modern:last-child {#}
+{#                  border-bottom: none;#}
+{#                  padding-bottom: 0;#}
+{#                }#}
+{#                #}
+{#                .spec-label {#}
+{#                  font-size: 0.85rem;#}
+{#                  margin-bottom: 0.25rem;#}
+{#                }#}
+{#                #}
+{#                .spec-value {#}
+{#                  font-size: 1.05rem;#}
+{#                }#}
+{#                #}
+{#                @media (max-width: 768px) {#}
+{#                  .highlights-card, .quick-details-card {#}
+{#                    height: auto !important;#}
+{#                  }#}
+{#                }#}
+{#              </style>#}
+{#            </div>#}
+{##}
+{#            <!-- Features Tab -->#}
+{#            <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">#}
+{#              <h4 class="mb-4">Features & Amenities</h4>#}
+{#              {% if car.features %}#}
+{#                <div class="row">#}
+{#                  <div class="col-12">#}
+{#                    <!-- Display formatted features with bullet points -->#}
+{#                    <div class="feature-list">#}
+{#                      {{ car.features|linebreaks }}#}
+{#                    </div>#}
+{#                  </div>#}
+{#                </div>#}
+{#              {% else %}#}
+{#                <p class="text-muted">No specific features listed for this vehicle.</p>#}
+{#              {% endif %}#}
+{#            </div>#}
+{##}
+{#            <!-- Reconditioning Info Tab -->#}
+{#            {% if car.car_type == 'reconditioned' %}#}
+{#            <div class="tab-pane fade" id="reconinfo" role="tabpanel" aria-labelledby="reconinfo-tab">#}
+{#              <h4 class="mb-4">Reconditioning Information</h4>#}
+{#              <div class="card bg-light border-0">#}
+{#                <div class="card-body">#}
+{#                  <div class="row mb-3">#}
+{#                    <div class="col-md-6">#}
+{#                      <div class="spec-item">#}
+{#                        <div class="feature-icon">#}
+{#                          <i class="fas fa-globe"></i>#}
+{#                        </div>#}
+{#                        <div>#}
+{#                          <p class="text-muted mb-0">Country of Origin</p>#}
+{#                          <p class="fw-bold">{{ car.country_of_origin }}</p>#}
+{#                        </div>#}
+{#                      </div>#}
+{#                    </div>#}
+{#                  </div>#}
+{##}
+{#                  <h5 class="mt-3 mb-3">Reconditioning Status</h5>#}
+{#                  <p>{{ car.recondition_status|linebreaks }}</p>#}
+{#                </div>#}
+{#              </div>#}
+{#            </div>#}
+{#            {% endif %}#}
+{##}
+{#            <!-- Seller Tab -->#}
+{#            <div class="tab-pane fade" id="seller" role="tabpanel" aria-labelledby="seller-tab">#}
+{#              <h4 class="mb-4">Seller Information</h4>#}
+{#              <div class="seller-info">#}
+{#                {% if car.seller.profile.profile_picture %}#}
+{#                  <img src="{{ car.seller.profile.profile_picture.url }}" alt="Seller" class="seller-avatar">#}
+{#                {% else %}#}
+{#                  <div class="bg-secondary text-white d-flex align-items-center justify-content-center seller-avatar">#}
+{#                    <i class="fas fa-user"></i>#}
+{#                  </div>#}
+{#                {% endif %}#}
+{#                <div>#}
+{#                  <h5 class="mb-1">#}
+{#                    {{ car.seller.get_full_name|default:car.seller.username }}#}
+{#                    {% if car.seller.profile.is_dealer %}#}
+{#                      <span class="badge bg-info ms-2">Dealer</span>#}
+{#                    {% endif %}#}
+{#                  </h5>#}
+{#                  {% if car.seller.profile.company_name %}#}
+{#                    <p class="mb-1"><i class="fas fa-building me-2"></i>{{ car.seller.profile.company_name }}</p>#}
+{#                  {% endif %}#}
+{#                  <p class="mb-0 text-muted"><i class="fas fa-clock me-2"></i>Member since {{ car.seller.date_joined|date }}</p>#}
+{#                </div>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <!-- Similar Cars -->#}
+{#      <h4 class="mb-3">Similar Cars</h4>#}
+{#      <div class="row row-cols-1 row-cols-md-3 g-4">#}
+{#        {% for similar_car in similar_cars %}#}
+{#          <div class="col">#}
+{#            <div class="card h-100 border-0 shadow-sm similar-car-item">#}
+{#              {% if similar_car.images.exists %}#}
+{#                <img src="{{ similar_car.images.first.image.url }}" class="card-img-top" alt="{{ similar_car }}"#}
+{#                     style="height: 150px; object-fit: cover;">#}
+{#              {% else %}#}
+{#                <img src="{% static 'images/car-placeholder.jpg' %}" class="card-img-top" alt="{{ similar_car }}"#}
+{#                     style="height: 150px; object-fit: cover;">#}
+{#              {% endif %}#}
+{#              <div class="card-body">#}
+{#                <h5 class="card-title">{{ similar_car.year }} {{ similar_car.make }} {{ similar_car.model }}</h5>#}
+{#                <div class="d-flex justify-content-between align-items-center">#}
+{#                  <span class="fw-bold text-primary">${{ similar_car.price|floatformat:2 }}</span>#}
+{#                  <a href="{{ similar_car.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View Details</a>#}
+{#                </div>#}
+{#              </div>#}
+{#            </div>#}
+{#          </div>#}
+{#        {% empty %}#}
+{#          <div class="col-12">#}
+{#            <div class="alert alert-info">No similar cars found.</div>#}
+{#          </div>#}
+{#        {% endfor %}#}
+{#      </div>#}
+{#    </div>#}
+{##}
+{#    <!-- Sidebar / Contact Column -->#}
+{#    <div class="col-lg-4">#}
+{#      <!-- Price Card -->#}
+{#      <div class="card mb-4 border-0 shadow-sm">#}
+{#        <div class="card-body text-center">#}
+{#          <h2 class="car-price mb-3">${{ car.price|floatformat:2 }}</h2>#}
+{#          {% if not car.is_sold %}#}
+{#            {% if user.is_authenticated %}#}
+{#              {% if user == car.seller %}#}
+{#                <div class="d-grid gap-2">#}
+{#                  <a href="{% url 'car-update' car.slug %}" class="btn btn-primary">#}
+{#                    <i class="fas fa-edit me-2"></i> Edit Listing#}
+{#                  </a>#}
+{#                  <a href="{% url 'mark-as-sold' car.slug %}" class="btn btn-success">#}
+{#                    <i class="fas fa-check-circle me-2"></i> Mark as Sold#}
+{#                  </a>#}
+{#                  <a href="{% url 'car-delete' car.slug %}" class="btn btn-danger">#}
+{#                    <i class="fas fa-trash-alt me-2"></i> Delete Listing#}
+{#                  </a>#}
+{#                </div>#}
+{#              {% endif %}#}
+{#            {% endif %}#}
+{#          {% else %}#}
+{#            <div class="alert alert-danger">#}
+{#              <i class="fas fa-tag me-2"></i> This car is already sold.#}
+{#            </div>#}
+{#          {% endif %}#}
+{#        </div>#}
+{#      </div>#}
+{##}
+{#      <!-- Contact Form -->#}
+{#      {% if not car.is_sold and user.is_authenticated and user != car.seller %}#}
+{#        <div class="card mb-4 border-0 shadow-sm">#}
+{#          <div class="card-header bg-white">#}
+{#            <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Contact Seller</h5>#}
+{#          </div>#}
+{#          <div class="card-body">#}
+{#            <form method="post" class="inquiry-form">#}
+{#              {% csrf_token %}#}
+{#              <div class="mb-3">#}
+{#                <label for="id_name" class="form-label">Your Name</label>#}
+{#                {{ inquiry_form.name }}#}
+{#              </div>#}
+{#              <div class="mb-3">#}
+{#                <label for="id_email" class="form-label">Email Address</label>#}
+{#                {{ inquiry_form.email }}#}
+{#              </div>#}
+{#              <div class="mb-3">#}
+{#                <label for="id_phone" class="form-label">Phone Number</label>#}
+{#                {{ inquiry_form.phone }}#}
+{#              </div>#}
+{#              <div class="mb-3">#}
+{#                <label for="id_message" class="form-label">Message</label>#}
+{#                {{ inquiry_form.message }}#}
+{#              </div>#}
+{#              <button type="submit" class="btn btn-primary w-100">#}
+{#                <i class="fas fa-paper-plane me-2"></i> Send Inquiry#}
+{#              </button>#}
+{#            </form>#}
+{#          </div>#}
+{#        </div>#}
+{#      {% elif not user.is_authenticated and not car.is_sold %}#}
+{#        <div class="card mb-4 border-0 shadow-sm">#}
+{#          <div class="card-body text-center py-4">#}
+{#            <i class="fas fa-user-lock fa-3x text-muted mb-3"></i>#}
+{#            <h5>Want to contact the seller?</h5>#}
+{#            <p class="mb-3">You need to be logged in to contact the seller and make inquiries about this vehicle.</p>#}
+{#            <div class="d-grid gap-2">#}
+{#              <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">#}
+{#                <i class="fas fa-sign-in-alt me-2"></i> Login #}
+{#              </a>#}
+{#              <a href="{% url 'register' %}?next={{ request.path }}" class="btn btn-outline-primary">#}
+{#                <i class="fas fa-user-plus me-2"></i> Register#}
+{#              </a>#}
+{#            </div>#}
+{#          </div>#}
+{#        </div>#}
+{#      {% endif %}#}
+{#      #}
+{#      <!-- Safety Tips -->#}
+{#      <div class="card border-0 shadow-sm mb-4">#}
+{#        <div class="card-header bg-white">#}
+{#          <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Safety Tips</h5>#}
+{#        </div>#}
+{#        <div class="card-body">#}
+{#          <ul class="list-unstyled mb-0">#}
+{#            <li class="d-flex mb-3">#}
+{#              <i class="fas fa-check-circle text-success me-2 mt-1"></i>#}
+{#              <span>Meet in a public place and inspect the car during daylight hours</span>#}
+{#            </li>#}
+{#            <li class="d-flex mb-3">#}
+{#              <i class="fas fa-check-circle text-success me-2 mt-1"></i>#}
+{#              <span>Test drive the vehicle before making a decision</span>#}
+{#            </li>#}
+{#            <li class="d-flex mb-3">#}
+{#              <i class="fas fa-check-circle text-success me-2 mt-1"></i>#}
+{#              <span>Verify all documents and history of the vehicle</span>#}
+{#            </li>#}
+{#            <li class="d-flex">#}
+{#              <i class="fas fa-check-circle text-success me-2 mt-1"></i>#}
+{#              <span>Never wire money or pay in advance</span>#}
+{#            </li>#}
+{#          </ul>#}
+{#        </div>#}
+{#      </div>#}
+{#      #}
+{#      <!-- Share Section -->#}
+{#      <div class="card border-0 shadow-sm">#}
+{#        <div class="card-header bg-white">#}
+{#          <h5 class="mb-0"><i class="fas fa-share-alt me-2"></i>Share This Car</h5>#}
+{#        </div>#}
+{#        <div class="card-body">#}
+{#          <div class="d-flex justify-content-around">#}
+{#            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-primary">#}
+{#              <i class="fab fa-facebook-f"></i>#}
+{#            </a>#}
+{#            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text=Check out this {{ car.year }} {{ car.make }} {{ car.model }}" target="_blank" class="btn btn-outline-info">#}
+{#              <i class="fab fa-twitter"></i>#}
+{#            </a>#}
+{#            <a href="https://wa.me/?text=Check out this {{ car.year }} {{ car.make }} {{ car.model }} {{ request.build_absolute_uri }}" target="_blank" class="btn btn-outline-success">#}
+{#              <i class="fab fa-whatsapp"></i>#}
+{#            </a>#}
+{#            <a href="mailto:?subject=Check out this {{ car.year }} {{ car.make }} {{ car.model }}&body=I found this amazing car: {{ request.build_absolute_uri }}" class="btn btn-outline-secondary">#}
+{#              <i class="fas fa-envelope"></i>#}
+{#            </a>#}
+{#          </div>#}
+{#        </div>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+{#</div>#}
+{#{% endblock %}#}
+{##}
+{#{% block extra_js %}#}
+{#<script>#}
+{#  document.addEventListener('DOMContentLoaded', function() {#}
+{#    // Image gallery thumbnails functionality#}
+{#    const thumbnails = document.querySelectorAll('.thumbnail');#}
+{#    #}
+{#    thumbnails.forEach(thumb => {#}
+{#      thumb.addEventListener('click', function() {#}
+{#        // Remove active class from all thumbnails#}
+{#        thumbnails.forEach(t => t.classList.remove('active'));#}
+{#        #}
+{#        // Add active class to clicked thumbnail#}
+{#        this.classList.add('active');#}
+{#        #}
+{#        // Get the slide index and activate it#}
+{#        const slideIndex = this.getAttribute('data-bs-slide-to');#}
+{#        const carousel = bootstrap.Carousel.getInstance(document.getElementById('carCarousel'));#}
+{#        carousel.to(slideIndex);#}
+{#      });#}
+{#    });#}
+{#    #}
+{#    // Update thumbnail active state when carousel slides#}
+{#    const carCarousel = document.getElementById('carCarousel');#}
+{#    if (carCarousel) {#}
+{#      carCarousel.addEventListener('slid.bs.carousel', function(e) {#}
+{#        const slideIndex = e.to;#}
+{#        #}
+{#        // Update active thumbnail#}
+{#        thumbnails.forEach(thumb => {#}
+{#          thumb.classList.remove('active');#}
+{#          if (thumb.getAttribute('data-bs-slide-to') == slideIndex) {#}
+{#            thumb.classList.add('active');#}
+{#            #}
+{#            // Scroll thumbnail into view if needed#}
+{#            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });#}
+{#          }#}
+{#        });#}
+{#      });#}
+{#    }#}
+{#  });#}
+{#    #}
+{#      // Initialize the carousel and thumbnails functionality#}
+{#      document.addEventListener('DOMContentLoaded', function() {#}
+{#    // Get the carousel element#}
+{#    const carousel = document.getElementById('carCarousel');#}
+{#    #}
+{#    if (carousel) {#}
+{#      // Get all thumbnail images#}
+{#      const thumbnails = document.querySelectorAll('.thumbnail');#}
+{#      #}
+{#      // Initialize the Bootstrap carousel#}
+{#      const carouselInstance = new bootstrap.Carousel(carousel);#}
+{#      #}
+{#      // Add click event listeners to thumbnails#}
+{#      thumbnails.forEach(function(thumbnail) {#}
+{#        thumbnail.addEventListener('click', function() {#}
+{#          // Get the slide index from data attribute#}
+{#          const slideIndex = this.getAttribute('data-bs-slide-to');#}
+{#          #}
+{#          // Move carousel to that slide#}
+{#          carouselInstance.to(parseInt(slideIndex));#}
+{#          #}
+{#          // Update active class on thumbnails#}
+{#          thumbnails.forEach(function(thumb) {#}
+{#            thumb.classList.remove('active');#}
+{#          });#}
+{#          this.classList.add('active');#}
+{#        });#}
+{#      });#}
+{#      #}
+{#      // Update active thumbnail when carousel slides#}
+{#      carousel.addEventListener('slid.bs.carousel', function(event) {#}
+{#        const slideIndex = event.to;#}
+{#        #}
+{#        // Update active class on thumbnails#}
+{#        thumbnails.forEach(function(thumb, index) {#}
+{#          thumb.classList.remove('active');#}
+{#          if (index === slideIndex) {#}
+{#            thumb.classList.add('active');#}
+{#            #}
+{#            // Scroll thumbnail into view if needed#}
+{#            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });#}
+{#          }#}
+{#        });#}
+{#      });#}
+{#    }#}
+{#  });#}
+{#    #}
+{#      // Initialize the carousel and thumbnails functionality#}
+{#      document.addEventListener('DOMContentLoaded', function() {#}
+{#    // Get the carousel element#}
+{#    const carousel = document.getElementById('carCarousel');#}
+{#    #}
+{#    if (carousel) {#}
+{#      // Get all thumbnail images#}
+{#      const thumbnails = document.querySelectorAll('.thumbnail');#}
+{#      #}
+{#      // Initialize the Bootstrap carousel#}
+{#      const carouselInstance = new bootstrap.Carousel(carousel);#}
+{#      #}
+{#      // Add click event listeners to thumbnails#}
+{#      thumbnails.forEach(function(thumbnail) {#}
+{#        thumbnail.addEventListener('click', function() {#}
+{#          // Get the slide index from data attribute#}
+{#          const slideIndex = this.getAttribute('data-bs-slide-to');#}
+{#          #}
+{#          // Move carousel to that slide#}
+{#          carouselInstance.to(parseInt(slideIndex));#}
+{#          #}
+{#          // Update active class on thumbnails#}
+{#          thumbnails.forEach(function(thumb) {#}
+{#            thumb.classList.remove('active');#}
+{#          });#}
+{#          this.classList.add('active');#}
+{#        });#}
+{#      });#}
+{#      #}
+{#      // Update active thumbnail when carousel slides#}
+{#      carousel.addEventListener('slid.bs.carousel', function(event) {#}
+{#        const slideIndex = event.to;#}
+{#        #}
+{#        // Update active class on thumbnails#}
+{#        thumbnails.forEach(function(thumb, index) {#}
+{#          thumb.classList.remove('active');#}
+{#          if (index === slideIndex) {#}
+{#            thumb.classList.add('active');#}
+{#            #}
+{#            // Scroll thumbnail into view if needed#}
+{#            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });#}
+{#          }#}
+{#        });#}
+{#      });#}
+{#    }#}
+{#      });#}
+{#</script>#}
+{#{% endblock %}#}
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ car.year }} {{ car.make.name }} {{ car.model.name }} - CarDealz{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --primary-dark: #1d4ed8;
+        --secondary-color: #f59e0b;
+        --success-color: #10b981;
+        --dark-color: #1f2937;
+        --light-bg: #f8fafc;
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    /* Page Header */
+    .page-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff" fill-opacity="0.05" points="0,1000 1000,0 1000,1000"/></svg>');
+        background-size: cover;
+    }
+
+    .page-header .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+
+    .breadcrumb-item.active {
+        color: white;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+        content: "›";
+    }
+
+    /* Car Title Section */
+    .car-title-section {
+        margin-bottom: 2rem;
+    }
+
+    .car-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .car-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .car-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .badge-new {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .badge-reconditioned {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .badge-used {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+
+    /* Sold Banner */
+    .sold-banner {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sold-banner i {
+        font-size: 2rem;
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-top: -3rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Image Gallery */
+    .gallery-section {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-xl);
+        margin-bottom: 2rem;
+    }
+
+    .car-carousel {
+        position: relative;
+        height: 500px;
+        overflow: hidden;
+    }
+
+    .carousel-inner {
+        height: 100%;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .carousel-item {
+        height: 100%;
+    }
+
+    .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 5%;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 0 12px 12px 0;
+        margin: 20px 0;
+    }
+
+    .carousel-control-next {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 30px;
+        height: 30px;
+        background-size: 60%;
+    }
+
+    /* Thumbnails */
+    .thumbnail-gallery {
+        padding: 1.5rem;
+        background: white;
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .thumbnail-gallery::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .thumbnail-gallery::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 3px;
+    }
+
+    .thumbnail-gallery::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 3px;
+    }
+
+    .thumbnail {
+        width: 100px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 12px;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        flex-shrink: 0;
+    }
+
+    .thumbnail:hover,
+    .thumbnail.active {
+        opacity: 1;
+        border-color: var(--primary-color);
+        transform: scale(1.05);
+    }
+
+    /* Quick Specs */
+    .quick-specs {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 2rem;
+    }
+
+    .spec-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .spec-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--light-bg);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .spec-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .spec-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .spec-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .spec-value {
+        font-weight: 700;
+        color: var(--dark-color);
+        font-size: 1rem;
+    }
+
+    /* Tabs */
+    .detail-tabs {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .nav-tabs {
+        background: var(--light-bg);
+        border: none;
+        padding: 0.5rem;
+        margin: 0;
+    }
+
+    .nav-tabs .nav-link {
+        background: transparent;
+        border: none;
+        color: #6b7280;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+    }
+
+    .nav-tabs .nav-link:hover {
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--primary-color);
+    }
+
+    .nav-tabs .nav-link.active {
+        background: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .tab-content {
+        padding: 2rem;
+    }
+
+    /* Highlights Section */
+    .highlights-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .highlights-card {
+        background: var(--light-bg);
+        border-radius: 16px;
+        padding: 2rem;
+        position: relative;
+    }
+
+    .highlights-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .highlight-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .highlight-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .highlight-icon {
+        color: var(--success-color);
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+
+    .quick-details-card {
+        background: var(--gradient-primary);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+    }
+
+    .quick-details-title {
+        color: white;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .quick-detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .quick-detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .quick-detail-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .quick-detail-value {
+        font-weight: 700;
+        color: white;
+    }
+
+    /* Description Section */
+    .description-section {
+        margin-bottom: 3rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin: 0;
+    }
+
+    .description-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    /* Specifications Grid */
+    .specifications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .spec-category-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .spec-category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .spec-category-header {
+        background: var(--light-bg);
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .spec-category-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--dark-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .spec-category-body {
+        padding: 1.5rem;
+    }
+
+    .spec-item-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .spec-item-modern:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .spec-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .spec-value {
+        font-weight: 600;
+        color: var(--dark-color);
+    }
+
+    /* Features List */
+    .feature-list {
+        line-height: 1.8;
+    }
+
+    .feature-list p {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .feature-list p:before {
+        content: "\f058";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        color: var(--success-color);
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 1.1rem;
+    }
+
+    .features-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .feature-icon {
+        color: var(--success-color);
+        font-size: 1.1rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        position: sticky;
+        top: 120px;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .sidebar-card-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .car-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .price-note {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+
+    .sidebar-card-body {
+        padding: 1.5rem;
+    }
+
+    /* Buttons */
+    .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary-modern {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    .btn-success-modern {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+        color: white;
+    }
+
+    .btn-success-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    .btn-danger-modern {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+    }
+
+    .btn-danger-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    /* Contact Form */
+    .contact-form {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+    }
+
+    .contact-form-header {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .contact-form-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-control:focus {
+        outline: none;
+    }
+
+    /* Login Prompt */
+    .login-prompt {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .login-prompt i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        color: #d1d5db;
+    }
+
+    /* Safety Tips */
+    .safety-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: var(--light-bg);
+        border-radius: 8px;
+    }
+
+    .safety-icon {
+        color: var(--success-color);
+        margin-top: 0.125rem;
+    }
+
+    /* Share Buttons */
+    .share-buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 0.5rem;
+    }
+
+    .share-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1.25rem;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        color: white;
+    }
+
+    .facebook { background: #1877f2; }
+    .twitter { background: #1da1f2; }
+    .whatsapp { background: #25d366; }
+    .email { background: #6b7280; }
+
+    /* Similar Cars */
+    .similar-cars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .similar-car-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .similar-car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .similar-car-image {
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .similar-car-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .similar-car-card:hover .similar-car-image img {
+        transform: scale(1.1);
+    }
+
+    .similar-car-content {
+        padding: 1.5rem;
+    }
+
+    .similar-car-title {
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .similar-car-price {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--primary-color);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d5db;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .car-title {
+            font-size: 2rem;
+        }
+
+        .car-carousel {
+            height: 300px;
+        }
+
+        .highlights-section {
+            grid-template-columns: 1fr;
+        }
+
+        .spec-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .specifications-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .similar-cars-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .main-content {
+            margin-top: -1rem;
+        }
+
+        .sidebar {
+            position: static;
+        }
+    }
+
+    /* Loading Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'car-list' %}">Cars</a></li>
+                <li class="breadcrumb-item active">{{ car.year }} {{ car.make.name }} {{ car.model.name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Car Title Section -->
+        <div class="car-title-section">
+            <h1 class="car-title">{{ car.year }} {{ car.make.name }} {{ car.model.name }}</h1>
+            <div class="car-subtitle">
+                <span><i class="fas fa-calendar-alt me-1"></i>Posted {{ car.posted_on|timesince }} ago</span>
+                <div class="car-badge badge-{{ car.car_type }}">
+                    {{ car.get_car_type_display }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container main-content">
+    {% if car.is_sold %}
+        <div class="sold-banner animate-fade-in-up">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <h4 class="mb-1">This car has been sold!</h4>
+                <p class="mb-0">This listing is kept for reference purposes only. Contact the seller for similar vehicles.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Main Content Column -->
+        <div class="col-lg-8">
+            <!-- Image Gallery -->
+            <div class="gallery-section animate-fade-in-up">
+                {% if car.images.exists %}
+                    <div id="carCarousel" class="carousel slide car-carousel" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for image in car.images.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ image.image.url }}" alt="{{ car }} - Image {{ forloop.counter }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if car.images.count > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if car.images.count > 1 %}
+                        <div class="thumbnail-gallery">
+                            {% for image in car.images.all %}
+                                <img src="{{ image.image.url }}" class="thumbnail {% if forloop.first %}active{% endif %}"
+                                     data-bs-target="#carCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+                                     alt="Thumbnail {{ forloop.counter }}">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="car-carousel">
+                        <img src="https://via.placeholder.com/800x500/667eea/ffffff?text=No+Image+Available"
+                             alt="No Image Available" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Specifications -->
+            <div class="quick-specs animate-fade-in-up">
+                <div class="spec-grid">
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="spec-label">Year</div>
+                        <div class="spec-value">{{ car.year }}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="spec-label">Mileage</div>
+                        <div class="spec-value">{{ car.mileage|floatformat:0 }} km</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <div class="spec-label">Fuel Type</div>
+                        <div class="spec-value">{{ car.get_fuel_type_display }}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="spec-label">Transmission</div>
+                        <div class="spec-value">{{ car.get_transmission_display }}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="spec-label">Color</div>
+                        <div class="spec-value">{{ car.color }}</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="spec-label">Seats</div>
+                        <div class="spec-value">{{ car.seats }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Tabs -->
+            <div class="detail-tabs animate-fade-in-up">
+                <ul class="nav nav-tabs" id="carDetailTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"
+                                type="button" role="tab">
+                            <i class="fas fa-info-circle me-2"></i>Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features"
+                                type="button" role="tab">
+                            <i class="fas fa-star me-2"></i>Features
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications"
+                                type="button" role="tab">
+                            <i class="fas fa-cogs me-2"></i>Specifications
+                        </button>
+                    </li>
+                    {% if car.car_type == 'reconditioned' %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reconinfo-tab" data-bs-toggle="tab" data-bs-target="#reconinfo"
+                                type="button" role="tab">
+                            <i class="fas fa-tools me-2"></i>Reconditioning
+                        </button>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="seller-tab" data-bs-toggle="tab" data-bs-target="#seller"
+                                type="button" role="tab">
+                            <i class="fas fa-user me-2"></i>Seller
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="carDetailTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                        <!-- Highlights Section -->
+                        <div class="highlights-section">
+                            <div class="highlights-card">
+                                <h4 class="highlights-title">
+                                    <i class="fas fa-star text-warning"></i>
+                                    Key Highlights
+                                </h4>
+                                <div class="highlight-item">
+                                    <div class="highlight-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>{{ car.year }} model with {{ car.mileage|floatformat:0 }} km on the odometer</div>
+                                </div>
+                                <div class="highlight-item">
+                                    <div class="highlight-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>{{ car.get_transmission_display }} transmission with {{ car.get_fuel_type_display }} engine</div>
+                                </div>
+                                <div class="highlight-item">
+                                    <div class="highlight-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>{{ car.color }} exterior with {{ car.seats }} comfortable seats</div>
+                                </div>
+                                <div class="highlight-item">
+                                    <div class="highlight-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>{{ car.engine_capacity }}L engine capacity with excellent performance</div>
+                                </div>
+                            </div>
+
+                            <div class="quick-details-card">
+                                <h4 class="quick-details-title">Quick Details</h4>
+                                <div class="quick-detail-item">
+                                    <span class="quick-detail-label">Make:</span>
+                                    <span class="quick-detail-value">{{ car.make.name }}</span>
+                                </div>
+                                <div class="quick-detail-item">
+                                    <span class="quick-detail-label">Model:</span>
+                                    <span class="quick-detail-value">{{ car.model.name }}</span>
+                                </div>
+                                <div class="quick-detail-item">
+                                    <span class="quick-detail-label">Year:</span>
+                                    <span class="quick-detail-value">{{ car.year }}</span>
+                                </div>
+                                <div class="quick-detail-item">
+                                    <span class="quick-detail-label">Body Type:</span>
+                                    <span class="quick-detail-value">{{ car.get_car_type_display }}</span>
+                                </div>
+                                <div class="quick-detail-item">
+                                    <span class="quick-detail-label">Doors:</span>
+                                    <span class="quick-detail-value">{{ car.doors }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Section -->
+                        <div class="description-section">
+                            <div class="section-header">
+                                <div class="section-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h4 class="section-title">About This Vehicle</h4>
+                            </div>
+                            <div class="description-content">
+                                {{ car.description|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Tab -->
+                    <div class="tab-pane fade" id="features" role="tabpanel">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <h4 class="section-title">Features & Amenities</h4>
+                        </div>
+                        {% if car.features %}
+                            <div class="description-content">
+                                <div class="feature-list">
+                                    {{ car.features|linebreaks }}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-star"></i>
+                                <h5>No Features Listed</h5>
+                                <p>No specific features have been listed for this vehicle.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Specifications Tab -->
+                    <div class="tab-pane fade" id="specifications" role="tabpanel">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h4 class="section-title">Technical Specifications</h4>
+                        </div>
+
+                        <div class="specifications-grid">
+                            <!-- Performance Specs -->
+                            <div class="spec-category-card">
+                                <div class="spec-category-header">
+                                    <h5><i class="fas fa-tachometer-alt text-primary me-2"></i>Performance</h5>
+                                </div>
+                                <div class="spec-category-body">
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Engine Capacity</span>
+                                        <span class="spec-value">{{ car.engine_capacity }}L</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Fuel Type</span>
+                                        <span class="spec-value">{{ car.get_fuel_type_display }}</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Transmission</span>
+                                        <span class="spec-value">{{ car.get_transmission_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exterior Specs -->
+                            <div class="spec-category-card">
+                                <div class="spec-category-header">
+                                    <h5><i class="fas fa-car text-primary me-2"></i>Exterior</h5>
+                                </div>
+                                <div class="spec-category-body">
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Color</span>
+                                        <span class="spec-value">{{ car.color }}</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Body Type</span>
+                                        <span class="spec-value">{{ car.get_car_type_display }}</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Doors</span>
+                                        <span class="spec-value">{{ car.doors }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Interior Specs -->
+                            <div class="spec-category-card">
+                                <div class="spec-category-header">
+                                    <h5><i class="fas fa-couch text-primary me-2"></i>Interior</h5>
+                                </div>
+                                <div class="spec-category-body">
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Seats</span>
+                                        <span class="spec-value">{{ car.seats }}</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Mileage</span>
+                                        <span class="spec-value">{{ car.mileage|floatformat:0 }} km</span>
+                                    </div>
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Posted On</span>
+                                        <span class="spec-value">{{ car.posted_on|date:"M j, Y" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reconditioning Info Tab -->
+                    {% if car.car_type == 'reconditioned' %}
+                    <div class="tab-pane fade" id="reconinfo" role="tabpanel">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h4 class="section-title">Reconditioning Information</h4>
+                        </div>
+
+                        <div class="specifications-grid">
+                            <div class="spec-category-card">
+                                <div class="spec-category-header">
+                                    <h5><i class="fas fa-globe text-primary me-2"></i>Origin Details</h5>
+                                </div>
+                                <div class="spec-category-body">
+                                    <div class="spec-item-modern">
+                                        <span class="spec-label">Country of Origin</span>
+                                        <span class="spec-value">{{ car.country_of_origin|default:"Not specified" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if car.recondition_status %}
+                            <div class="description-section">
+                                <div class="section-header">
+                                    <div class="section-icon">
+                                        <i class="fas fa-wrench"></i>
+                                    </div>
+                                    <h4 class="section-title">Reconditioning Status</h4>
+                                </div>
+                                <div class="description-content">
+                                    {{ car.recondition_status|linebreaks }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Seller Tab -->
+                    <div class="tab-pane fade" id="seller" role="tabpanel">
+                        <div class="section-header">
+                            <div class="section-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4 class="section-title">Seller Information</h4>
+                        </div>
+
+                        <div class="highlights-card">
+                            <div class="d-flex align-items-center mb-4">
+                                {% if car.seller.profile.profile_picture %}
+                                    <img src="{{ car.seller.profile.profile_picture.url }}" alt="Seller"
+                                         class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                         style="width: 80px; height: 80px; font-size: 2rem;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-1">
+                                        {{ car.seller.get_full_name|default:car.seller.username }}
+                                        {% if car.seller.profile.is_dealer %}
+                                            <span class="badge bg-info ms-2">Dealer</span>
+                                        {% endif %}
+                                    </h5>
+                                    {% if car.seller.profile.company_name %}
+                                        <p class="mb-1 text-muted">
+                                            <i class="fas fa-building me-2"></i>{{ car.seller.profile.company_name }}
+                                        </p>
+                                    {% endif %}
+                                    <p class="mb-0 text-muted">
+                                        <i class="fas fa-clock me-2"></i>Member since {{ car.seller.date_joined|date:"F Y" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Cars -->
+            <div class="animate-fade-in-up">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-cars"></i>
+                    </div>
+                    <h4 class="section-title">Similar Cars</h4>
+                </div>
+
+                {% if similar_cars %}
+                    <div class="similar-cars-grid">
+                        {% for similar_car in similar_cars %}
+                            <a href="{{ similar_car.get_absolute_url }}" class="similar-car-card">
+                                <div class="similar-car-image">
+                                    {% if similar_car.images.exists %}
+                                        <img src="{{ similar_car.images.first.image.url }}" alt="{{ similar_car }}">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/280x180/667eea/ffffff?text=No+Image" alt="{{ similar_car }}">
+                                    {% endif %}
+                                </div>
+                                <div class="similar-car-content">
+                                    <h5 class="similar-car-title">{{ similar_car.year }} {{ similar_car.make.name }} {{ similar_car.model.name }}</h5>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="similar-car-price">${{ similar_car.price|floatformat:0 }}</span>
+                                        <span class="badge bg-secondary">{{ similar_car.get_car_type_display }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-car"></i>
+                        <h5>No Similar Cars Found</h5>
+                        <p>We couldn't find any similar cars at the moment.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar">
+                <!-- Price Card -->
+                <div class="sidebar-card animate-fade-in-up">
+                    <div class="sidebar-card-header">
+                        <h2 class="car-price">${{ car.price|floatformat:0 }}</h2>
+                        <p class="price-note">Final price negotiable</p>
+                    </div>
+                    <div class="sidebar-card-body">
+                        {% if not car.is_sold %}
+                            {% if user.is_authenticated %}
+                                {% if user == car.seller %}
+                                    <div class="d-grid gap-3">
+                                        <a href="{% url 'car-update' car.slug %}" class="btn-modern btn-primary-modern">
+                                            <i class="fas fa-edit"></i>Edit Listing
+                                        </a>
+                                        <a href="{% url 'mark-as-sold' car.slug %}" class="btn-modern btn-success-modern">
+                                            <i class="fas fa-check-circle"></i>Mark as Sold
+                                        </a>
+                                        <a href="{% url 'car-delete' car.slug %}" class="btn-modern btn-danger-modern">
+                                            <i class="fas fa-trash-alt"></i>Delete Listing
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                <i class="fas fa-tag fa-2x mb-2"></i>
+                                <h6>This car is already sold</h6>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                {% if not car.is_sold and user.is_authenticated and user != car.seller %}
+                    <div class="contact-form animate-fade-in-up">
+                        <div class="contact-form-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>Contact Seller
+                            </h5>
+                        </div>
+                        <div class="contact-form-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label class="form-label">Your Name</label>
+                                    <input type="text" name="name" class="form-control" required
+                                           value="{{ user.get_full_name|default:user.username }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" name="email" class="form-control" required
+                                           value="{{ user.email }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" name="phone" class="form-control" required
+                                           placeholder="Your phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Message</label>
+                                    <textarea name="message" class="form-control" rows="4" required
+                                              placeholder="I'm interested in your {{ car.year }} {{ car.make.name }} {{ car.model.name }}. Is it still available?"></textarea>
+                                </div>
+                                <button type="submit" class="btn-modern btn-primary-modern w-100">
+                                    <i class="fas fa-paper-plane"></i>Send Inquiry
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% elif not user.is_authenticated and not car.is_sold %}
+                    <div class="sidebar-card animate-fade-in-up">
+                        <div class="sidebar-card-body">
+                            <div class="login-prompt">
+                                <i class="fas fa-user-lock"></i>
+                                <h5>Want to contact the seller?</h5>
+                                <p>You need to be logged in to contact the seller and make inquiries about this vehicle.</p>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn-modern btn-primary-modern">
+                                        <i class="fas fa-sign-in-alt"></i>Login
+                                    </a>
+                                    <a href="{% url 'register' %}?next={{ request.path }}" class="btn-modern btn-primary-modern">
+                                        <i class="fas fa-user-plus"></i>Register
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Safety Tips -->
+                <div class="sidebar-card animate-fade-in-up">
+                    <div class="sidebar-card-header" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Safety Tips
+                        </h5>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="safety-tip">
+                            <div class="safety-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span>Meet in a public place and inspect the car during daylight hours</span>
+                        </div>
+                        <div class="safety-tip">
+                            <div class="safety-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span>Test drive the vehicle before making a decision</span>
+                        </div>
+                        <div class="safety-tip">
+                            <div class="safety-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span>Verify all documents and history of the vehicle</span>
+                        </div>
+                        <div class="safety-tip">
+                            <div class="safety-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <span>Never wire money or pay in advance</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Section -->
+                <div class="sidebar-card animate-fade-in-up">
+                    <div class="sidebar-card-header" style="background: linear-gradient(135deg, var(--secondary-color), #d97706);">
+                        <h5 class="mb-0">
+                            <i class="fas fa-share-alt me-2"></i>Share This Car
+                        </h5>
+                    </div>
+                    <div class="sidebar-card-body">
+                        <div class="share-buttons">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}"
+                               target="_blank" class="share-btn facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text=Check out this {{ car.year }} {{ car.make.name }} {{ car.model.name }}"
+                               target="_blank" class="share-btn twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="https://wa.me/?text=Check out this {{ car.year }} {{ car.make.name }} {{ car.model.name }} {{ request.build_absolute_uri }}"
+                               target="_blank" class="share-btn whatsapp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:?subject=Check out this {{ car.year }} {{ car.make.name }} {{ car.model.name }}&body=I found this amazing car: {{ request.build_absolute_uri }}"
+                               class="share-btn email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize carousel and thumbnails
+        const carousel = document.getElementById('carCarousel');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+
+        if (carousel && thumbnails.length > 0) {
+            const carouselInstance = new bootstrap.Carousel(carousel);
+
+            // Thumbnail click handlers
+            thumbnails.forEach(function(thumbnail) {
+                thumbnail.addEventListener('click', function() {
+                    const slideIndex = parseInt(this.getAttribute('data-bs-slide-to'));
+                    carouselInstance.to(slideIndex);
+
+                    // Update active thumbnail
+                    thumbnails.forEach(thumb => thumb.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Update active thumbnail when carousel slides
+            carousel.addEventListener('slid.bs.carousel', function(event) {
+                const slideIndex = event.to;
+
+                thumbnails.forEach(function(thumb, index) {
+                    thumb.classList.remove('active');
+                    if (index === slideIndex) {
+                        thumb.classList.add('active');
+                        // Scroll thumbnail into view
+                        thumb.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'center'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        // Observe elements for animation
+        document.querySelectorAll('.gallery-section, .quick-specs, .detail-tabs, .sidebar-card, .similar-car-card').forEach((el) => {
+            observer.observe(el);
+        });
+
+        // Contact form enhancement
+        const contactForm = document.querySelector('.contact-form form');
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Sending...';
+                submitButton.disabled = true;
+            });
+        }
+
+        // Smooth scroll for tabs
+        document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+            tab.addEventListener('click', function() {
+                setTimeout(() => {
+                    document.querySelector('.detail-tabs').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            });
+        });
+
+        // Price formatting animation
+        const priceElement = document.querySelector('.car-price');
+        if (priceElement) {
+            const price = priceElement.textContent;
+            priceElement.textContent = '$0';
+
+            const targetPrice = parseInt(price.replace(/[$,]/g, ''));
+            const increment = Math.ceil(targetPrice / 50);
+            let currentPrice = 0;
+
+            const priceAnimation = setInterval(() => {
+                currentPrice += increment;
+                if (currentPrice >= targetPrice) {
+                    currentPrice = targetPrice;
+                    clearInterval(priceAnimation);
+                }
+                priceElement.textContent = ' + currentPrice.toLocaleString();
+            }, 20);
+        }
+
+        // Add loading states to share buttons
+        document.querySelectorAll('.share-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Keyboard navigation for carousel
+        document.addEventListener('keydown', function(e) {
+            if (carousel) {
+                const carouselInstance = bootstrap.Carousel.getInstance(carousel);
+                if (e.key === 'ArrowLeft') {
+                    carouselInstance.prev();
+                } else if (e.key === 'ArrowRight') {
+                    carouselInstance.next();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Car Listings - CarDealz{% endblock %}
+
+{% block extra_css %}
+<style>
+  .listing-card {
+    transition: transform 0.3s;
+    height: 100%;
+  }
+  
+  .listing-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .listing-image {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+  
+  .action-buttons .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .empty-state {
+    padding: 50px 20px;
+    text-align: center;
+  }
+  
+  .empty-state i {
+    font-size: 4rem;
+    color: #d1d1d1;
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item active">My Listings</li>
+    </ol>
+  </nav>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-6 fw-bold mb-0">My Car Listings</h1>
+    <a href="{% url 'car-create' %}" class="btn btn-primary">
+      <i class="fas fa-plus me-2"></i> Add New Car
+    </a>
+  </div>
+  
+  {% if cars %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for car in cars %}
+        <div class="col">
+          <div class="card listing-card border-0 shadow-sm">
+            {% if car.is_sold %}
+              <span class="badge bg-danger status-badge">Sold</span>
+            {% endif %}
+            
+            {% if car.images.exists %}
+              <img src="{{ car.images.first.image.url }}" class="card-img-top listing-image" alt="{{ car }}">
+            {% else %}
+              <img src="{% static 'images/car-placeholder.jpg' %}" class="card-img-top listing-image" alt="No image">
+            {% endif %}
+            
+            <div class="card-body">
+              <h5 class="card-title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-primary">${{ car.price|floatformat:2 }}</span>
+                <span class="badge bg-{% if car.car_type == 'new' %}primary{% elif car.car_type == 'reconditioned' %}success{% else %}secondary{% endif %}">
+                  {{ car.get_car_type_display }}
+                </span>
+              </div>
+              <p class="card-text small text-muted mb-1">
+                <i class="fas fa-calendar-alt me-1"></i> Posted: {{ car.posted_on|date:"M d, Y" }}
+              </p>
+              <p class="card-text small text-muted mb-3">
+                <i class="fas fa-eye me-1"></i> Views: 123
+              </p>
+              <div class="d-flex flex-column gap-2 action-buttons">
+                <a href="{{ car.get_absolute_url }}" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-eye me-1"></i> View Listing
+                </a>
+                <a href="{% url 'car-update' car.slug %}" class="btn btn-sm btn-outline-secondary">
+                  <i class="fas fa-edit me-1"></i> Edit Listing
+                </a>
+                {% if not car.is_sold %}
+                <a href="{% url 'mark-as-sold' car.slug %}" class="btn btn-sm btn-outline-success">
+                  <i class="fas fa-check-circle me-1"></i> Mark as Sold
+                </a>
+                {% endif %}
+                <a href="{% url 'car-delete' car.slug %}" class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash-alt me-1"></i> Delete Listing
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty state -->
+    <div class="empty-state bg-light rounded">
+      <i class="fas fa-car"></i>
+      <h3>No car listings yet</h3>
+      <p class="text-muted">You haven't created any car listings yet. Add your first car listing now!</p>
+      <a href="{% url 'car-create' %}" class="btn btn-primary mt-3">
+        <i class="fas fa-plus me-2"></i> Add Your First Car
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

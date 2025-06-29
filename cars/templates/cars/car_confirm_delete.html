@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Car - {{ object.year }} {{ object.make }} {{ object.model }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'my-listings' %}">My Listings</a></li>
+      <li class="breadcrumb-item active">Delete Car</li>
+    </ol>
+  </nav>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card border-0 shadow">
+        <div class="card-body text-center p-5">
+          <div class="mb-4">
+            <i class="fas fa-exclamation-triangle text-warning fa-4x"></i>
+          </div>
+          <h2 class="mb-4">Delete Car Listing</h2>
+          <p class="lead mb-4">Are you sure you want to delete your listing for the <strong>{{ object.year }} {{ object.make }} {{ object.model }}</strong>?</p>
+          <p class="text-muted mb-4">This action cannot be undone. All information associated with this listing will be permanently removed.</p>
+          
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-3">
+              <a href="{% url 'car-detail' object.slug %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-2"></i> Delete Permanently
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
