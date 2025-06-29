@@ -5,3 +5,8 @@ django-crispy-forms==2.4
 django-filter==25.1
 pillow==11.2.1
 sqlparse==0.5.3
+redis>=4.5
+celery[redis]>=5.3
+django-environ>=0.10
+gunicorn>=21.2
+Pillow>=10.0
